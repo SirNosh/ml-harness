@@ -1,100 +1,202 @@
 # ml-harness
 
-Custom Pi harness for Nosh and reusable ML project workflows.
+`ml-harness` is a custom Pi package for running Nosh's ML research/product orchestration harness inside a project.
 
-This package behaves like a real Pi package:
+It assumes the user already has [Pi](https://pi.dev/) installed. This package does not install Pi, replace Pi, or own the user's project code. It installs a contained harness runtime into the current project and registers that runtime with project-local Pi settings.
 
-- `src/index.ts` is the single Pi extension entrypoint.
-- The extension bootstraps the vendored Nosh fork of `pi-subagents`.
-- The extension bootstraps bundled `@juicesharp/rpiv-todo` for a live main-chat todo queue that survives reload and compaction.
-- The extension bootstraps `pi-web-access` for research search/fetch tools.
-- The extension bootstraps bundled `pi-zentui` so the ZentUI TUI theme behavior comes along with every harness install.
-- Nosh lives in the main chat as an injected orchestrator context, not as a spawned subagent.
-- Bundled specialist `agents/` are registered with the subagent service.
-- Subagents inherit the parent session model by default unless a spawn explicitly overrides it.
-- Bundled `chains/` remain private orchestrator resources and are injected directly into Nosh's main-chat context.
-- Bundled `skills/` are exposed as Pi skills.
+## What This Repo Is
 
-## Layout
+This repository contains the publishable npm package `ml-harness`.
 
-- `agents/` - Specialist subagent shims plus the disabled Nosh source prompt.
-- `chains/` - Private workflow definitions for Nosh only.
-- `prompts/` - Pi slash command prompt templates, including `/help` and `/onboard`.
-- `skills/` - Pi skills in `SKILL.md` format.
-- `templates/` - Report and artifact templates used by the harness.
-- `scripts/` - Deterministic helper scripts used by harness tools.
-- `src/index.ts` - Package glue for Pi resource discovery and agent registration.
-- `vendor/pi-subagents/` - Bundled Nosh subagent runtime fork; not published separately.
+The package provides:
 
-## Slash Commands
+- A Pi extension entrypoint at `src/index.ts`.
+- Nosh, the main-chat orchestrator prompt and runtime context.
+- A bundled specialist subagent roster under `agents/`.
+- Private chain definitions under `chains/` that only Nosh should inspect.
+- Slash command prompts under `prompts/`.
+- Deterministic onboarding/artifact setup scripts under `scripts/`.
+- Report/artifact templates under `templates/`.
+- A vendored Nosh fork of `pi-subagents` under `vendor/pi-subagents/`.
+- Bundled Pi packages for web access, todos, and ZentUI.
 
-- `/help` - Before onboarding, explains the harness and recommends `/onboard`. After truth files exist, asks Nosh to summarize what has been done, what remains, and current project status.
-- `/doctor` - Shows the loaded specialist roster, source precedence (`project > global > package`), roles, capabilities, and active harness tools.
-- `/onboard` - Runs the bundled Python artifact initializer through `harness_init_artifacts`, then starts Nosh's grilling interview. Chains stay locked until onboarding is complete.
-- `/todos` - Shows the live active queue managed by bundled `@juicesharp/rpiv-todo`.
+This repo intentionally does not contain any specific project artifacts, experiment outputs, paper drafts, or user project files.
 
-## Truth Files
+## What The Package Does
 
-The harness keeps its truth and report artifacts under `.ml-harness/`:
+When loaded by Pi, `ml-harness` turns the main chat into a Nosh-led orchestration environment.
 
-- `truths/project-context.md`
-- `truths/grill-session.md`
-- `truths/user-answers.md`
-- `truths/decisions.md`
-- `truths/phase-breakdown.md`
-- `truths/paper-definition.md`
-- `truths/claim-ledger.md`
-- `reports/{part-id}.md`
-- `state.json`
+Nosh owns the broad project context and delegates narrow work to specialist subagents. Subagents do not inherit the full main-chat context. Nosh must pass exact files, reports, and artifacts in each delegation packet.
 
-It also creates `docs/paper-draft.md` as the living manuscript for paper-targeted work.
+The harness is designed around two canonical control surfaces:
 
-`phase-breakdown.md` is the canonical per-phase work plan. After grilling and before chain work begins, Nosh breaks the project into bounded `part-id` tasks there. Chains are then run against those approved parts one at a time.
+- `.ml-harness/truths/phase-breakdown.md` is the authoritative phase/part plan.
+- The bundled `todo` tool is the live operational next-task queue.
 
-The bundled `todo` tool is the live next-task surface in the active branch. `phase-breakdown.md` defines what work is allowed; `todo` carries the current small working set of executable next tasks.
+After every subagent result, Nosh is instructed to reconcile reports, project artifacts, and the live todo queue before continuing.
 
-During onboarding, raw user answers are appended verbatim to `truths/user-answers.md` after each response. `docs/paper-draft.md` is created at onboarding time and treated as a living manuscript. For paper-targeted work, Nosh is not done until `truths/paper-definition.md` is satisfied and every draft claim is grounded in `truths/claim-ledger.md`.
+## Install Model
 
-## Local Development
-
-`package.json` bundles the Nosh fork inside the harness package:
-
-```json
-"files": ["vendor/pi-subagents/"]
-```
-
-For a test project, run the installer from the project root:
+Run commands from the root of the project where you want to use Pi with the harness.
 
 ```bash
 npx ml-harness init
 ```
 
-The installer creates `ml-harness/`, installs the harness inside that folder, and writes project-local Pi settings in `.pi/` that point at `ml-harness/node_modules/ml-harness`.
+This creates or updates only harness-owned install state:
 
-That is deliberate. Assume Pi is already installed by the user. The installer only lays down harness-owned files and package state inside `ml-harness/`; the subagent runtime is carried inside `ml-harness/vendor/pi-subagents`. It never installs or falls back to the upstream base package. `pi-web-access`, `@juicesharp/rpiv-todo`, and `pi-zentui` are bundled with the harness package.
+- `./ml-harness/package.json`
+- `./ml-harness/package-lock.json`
+- `./ml-harness/node_modules/`
+- `./.pi/settings.json`
+- `./.pi/subagents.json` if missing
+- `~/.pi/agent/zentui.json` if missing
 
-To refresh a stale project install without touching existing project files:
+It does not create or overwrite project artifacts. Project artifacts are created later from inside Pi by running `/onboard`.
+
+To update a stale harness install:
 
 ```bash
 npx ml-harness update
 ```
 
-To inspect the current project wiring:
+`update` refreshes the contained harness package in `./ml-harness` and preserves existing project files.
+
+To inspect the project wiring:
 
 ```bash
 npx ml-harness doctor
 ```
 
-The CLI never overwrites `.ml-harness/`, `docs/`, `src/`, `tests/`, reports, truth files, paper drafts, experiment outputs, or user code. Project artifacts are created by `/onboard` inside Pi, not by npm install or `npx ml-harness init`.
+`doctor` prints the expected installed package path, installed version, Pi package registration, subagent settings status, and ZentUI config status.
 
-On first install, if `~/.pi/agent/zentui.json` does not already exist, the installer seeds it with ZentUI's editor and status line enabled so fresh setups come up with ZentUI on by default. Existing user-owned ZentUI config is preserved.
+## What It Does Not Touch
 
-## Notes
+The CLI does not overwrite:
 
-- The harness owns subagent bootstrap itself. The intended local setup is to load this package, not this package plus a second top-level `pi-subagents` install.
-- The harness owns the live todo loop too. `@juicesharp/rpiv-todo` is bundled and bootstrapped from `src/index.ts`, and the `todo` tool is reserved for Nosh in the main chat so subagents cannot silently mutate the operational queue.
-- The harness owns `pi-web-access` bootstrap too. Research agents use `web_search`, `fetch_content`, and `get_search_content` with arXiv, Semantic Scholar, OpenAlex, Hugging Face, Crossref, GitHub, docs, benchmark reports, and implementation blogs as preferred sources.
-- `pi-zentui` is bundled inside the harness package and bootstrapped from `src/index.ts`, so the published `ml-harness` tarball carries the exact local ZentUI version and loads it without a second top-level package entry.
-- Nosh is injected into the top-level session with a hidden orchestration message on each turn.
-- The chain library is injected directly into Nosh's main-chat context. Child subagent sessions do not receive chain content and should never be asked to read chain files directly.
-- Do not publish a separate Nosh subagents package. Publish `ml-harness`; its tarball includes the vendored runtime.
+- `./.ml-harness/`
+- `./docs/`
+- `./src/`
+- `./tests/`
+- experiment outputs
+- reports
+- truth files
+- paper drafts
+- user code
+
+The npm package itself is inert when merely downloaded as a dependency. Project setup happens through `npx ml-harness init` or `npx ml-harness update`.
+
+## Pi Slash Commands
+
+After `init`, start Pi from the project root. The harness contributes these slash commands:
+
+- `/help` - explains the harness before onboarding; after onboarding, asks Nosh to summarize current project state.
+- `/doctor` - shows the loaded roster, source precedence, roles, capabilities, and active harness tools.
+- `/onboard` - creates deterministic project artifacts and starts Nosh's project interview.
+- `/todos` - shows the live next-task queue from the bundled todo package.
+
+## Project Artifacts
+
+`/onboard` initializes the project artifact structure under `.ml-harness/`.
+
+Important files include:
+
+- `.ml-harness/truths/project-context.md`
+- `.ml-harness/truths/grill-session.md`
+- `.ml-harness/truths/user-answers.md`
+- `.ml-harness/truths/decisions.md`
+- `.ml-harness/truths/phase-breakdown.md`
+- `.ml-harness/truths/paper-definition.md`
+- `.ml-harness/truths/claim-ledger.md`
+- `.ml-harness/reports/{part-id}.md`
+- `.ml-harness/state.json`
+- `.ml-harness/timeline.md`
+- `docs/paper-draft.md`
+
+During onboarding, raw user answers are appended verbatim to `user-answers.md` after each answer. `phase-breakdown.md` becomes the source of truth for bounded tasks. `paper-definition.md`, `claim-ledger.md`, and `docs/paper-draft.md` keep paper-targeted projects from drifting into endless implementation work without a publishable manuscript.
+
+## Orchestration Model
+
+Nosh is not a subagent. Nosh lives in the main chat and receives the full harness context.
+
+Specialist subagents are scoped workers. They get:
+
+- an exact objective,
+- exact input files,
+- expected output files,
+- success criteria,
+- report action,
+- no inherited main-chat context.
+
+The default loop is:
+
+1. Nosh selects a bounded part from `phase-breakdown.md`.
+2. Nosh delegates to the correct specialist or parallel specialists.
+3. Specialists write artifacts and `.ml-harness/reports/{part-id}.md`.
+4. Review agents inspect important outputs.
+5. Nosh reconciles reports, truth files, draft, claim ledger, timeline, and live todos.
+6. Nosh either delegates the next part, repairs the phase plan, synthesizes evidence, or states a concrete external blocker.
+
+For paper-targeted AI Lab work, the mission is not complete just because experiments ran or draft sections exist. The paper contract requires supported claims, completed sections, final exit proofs, and adversarial review.
+
+## Bundled Capabilities
+
+The package bundles and bootstraps:
+
+- `@juicesharp/rpiv-todo` for the live main-chat todo queue.
+- `pi-web-access` for `web_search`, `fetch_content`, and `get_search_content`.
+- `pi-zentui` for the ZentUI Pi theme integration.
+- `vendor/pi-subagents` as the harness-owned subagent runtime fork.
+
+Research agents are instructed to prefer:
+
+- arXiv
+- Semantic Scholar
+- OpenAlex
+- Hugging Face
+- Crossref
+- GitHub
+- official docs
+- benchmark reports
+- implementation blogs
+
+## Repo Layout
+
+- `agents/` - specialist subagent shims plus Nosh's source prompt.
+- `chains/` - private bounded workflows for Nosh.
+- `prompts/` - slash command prompt templates.
+- `skills/` - Pi skills exposed by the package.
+- `templates/` - report templates and schemas.
+- `assets/` - packaged phase defaults.
+- `scripts/` - deterministic helper scripts.
+- `src/` - Pi extension glue and harness runtime tools.
+- `vendor/pi-subagents/` - bundled subagent runtime fork.
+- `bin/install.js` - public `ml-harness` CLI.
+
+## Development And Publishing
+
+Check package contents:
+
+```bash
+npm pack --dry-run
+```
+
+Create a tarball:
+
+```bash
+npm pack
+```
+
+Test the CLI from the tarball:
+
+```bash
+npm exec --yes --package ./ml-harness-0.1.0.tgz -- ml-harness --help
+```
+
+Publish:
+
+```bash
+npm publish --access public
+```
+
+Do not publish a separate Nosh subagents package. The vendored runtime is part of `ml-harness`.
