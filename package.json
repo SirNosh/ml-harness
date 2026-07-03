@@ -20,7 +20,7 @@
     "url": "git+https://github.com/SirNosh/ml-harness.git"
   },
   "bin": {
-    "ml-harness": "./bin/install.js"
+    "ml-harness": "bin/install.js"
   },
   "dependencies": {
     "@juicesharp/rpiv-todo": "^1.20.0",
