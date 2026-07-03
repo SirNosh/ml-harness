@@ -1,0 +1,92 @@
+{
+  "name": "@nosh/pi-subagents",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/public.d.ts",
+      "default": "./src/service/service.ts"
+    },
+    "./extension": {
+      "default": "./src/index.ts"
+    },
+    "./settings": {
+      "types": "./dist/settings.d.ts",
+      "default": "./src/layered-settings.ts"
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "docs",
+    "vitest.config.ts",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    ".prettierignore"
+  ],
+  "imports": {
+    "#src/*": "./src/*",
+    "#test/*": "./test/*"
+  },
+  "description": "Nosh's focused, in-process sub-agent core for Pi ML harness orchestration.",
+  "author": {
+    "name": "Chris Lasher"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nosh/pi-subagents.git"
+  },
+  "homepage": "https://github.com/nosh/pi-subagents#readme",
+  "bugs": {
+    "url": "https://github.com/nosh/pi-subagents/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-extension",
+    "subagent",
+    "agent",
+    "autonomous"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.16",
+    "@earendil-works/pi-ai": "0.79.1",
+    "@earendil-works/pi-coding-agent": "0.79.1",
+    "@earendil-works/pi-tui": "0.79.1",
+    "@types/node": "^22.15.3",
+    "rollup": "^4.61.1",
+    "rollup-plugin-dts": "^6.4.1",
+    "rumdl": "^0.2.10",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ],
+    "video": "https://github.com/nosh/pi-subagents/raw/main/media/demo.mp4",
+    "image": "https://github.com/nosh/pi-subagents/raw/main/media/screenshot.png"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build:types": "rollup -c rollup.dts.config.mjs",
+    "verify:public-types": "bash scripts/verify-public-types.sh",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint:md": "rumdl check *.md docs/**/*.md",
+    "lint": "biome check . && eslint . && pnpm run lint:md"
+  }
+}

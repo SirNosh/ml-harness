@@ -1,0 +1,37 @@
+phases:
+  discovery:
+    gates:
+      - "Grill session complete"
+      - "Product brief exists"
+      - "Work breakdown approved"
+      - "Timeline started"
+  design:
+    gates:
+      - "System architecture approved"
+      - "Guardrails defined"
+      - "UX designed"
+      - "Readiness check passed"
+  implementation:
+    gates:
+      - "MVP working"
+      - "Tests pass"
+      - "Integration complete"
+      - "Security review clean"
+  evaluation:
+    gates:
+      - "Evaluation framework defined"
+      - "Quality gates set"
+      - "Red team testing done"
+      - "Performance benchmarks met"
+  deployment:
+    gates:
+      - "CI/CD pipeline working"
+      - "Monitoring configured"
+      - "Deployment runbook written"
+      - "Safety audit passed"
+  launch:
+    gates:
+      - "Beta users onboarded"
+      - "Feedback collected"
+      - "Quality gates passing"
+      - "Product review approved"

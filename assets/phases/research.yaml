@@ -1,0 +1,43 @@
+phases:
+  discovery:
+    gates:
+      - "Grill session complete"
+      - "Project context written"
+      - "Work breakdown approved by user"
+      - "Timeline started"
+  research:
+    gates:
+      - "Literature review complete"
+      - "Baseline reproduced"
+      - "Problem statement formalized"
+      - "SOTA comparison done"
+  design:
+    gates:
+      - "Experiment design reviewed"
+      - "Architecture reviewed"
+      - "Feasibility confirmed"
+      - "Theoretical soundness confirmed"
+  implementation:
+    gates:
+      - "Core code complete"
+      - "Tests pass"
+      - "Smoke test runs"
+      - "Code review clean"
+      - "Adversarial review addressed"
+  evaluation:
+    gates:
+      - "All ablations complete"
+      - "Results analyzed"
+      - "Statistical significance confirmed"
+      - "Comparison vs baseline done"
+  writing:
+    gates:
+      - "All sections written"
+      - "Figures created"
+      - "Paper assembled"
+      - "Claims reviewed"
+  done:
+    gates:
+      - "Paper ready for submission"
+      - "Code repo clean"
+      - "Reproduction instructions work"
