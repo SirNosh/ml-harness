@@ -1,6 +1,6 @@
 {
   "name": "ml-harness",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Custom ML harness for pi with a main-chat Nosh orchestrator, bundled subagents, and private chain workflows.",
   "keywords": [
